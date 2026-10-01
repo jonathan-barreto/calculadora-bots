@@ -173,3 +173,36 @@ body {
 .key--equals:active {
   background: var(--key-equals-bg-active);
 }
+
+/* Phones: the calculator fills the screen and the keypad sits at the bottom,
+   within thumb reach, with the display right above it. */
+@media (max-width: 480px) {
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .calculator {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    max-width: none;
+    padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .calculator__title {
+    margin-bottom: auto;
+  }
+
+  .display {
+    margin-top: 12px;
+  }
+
+  .key {
+    min-height: 64px;
+  }
+}
