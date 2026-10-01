@@ -5,7 +5,10 @@ dependencies). The UI text is in Brazilian Portuguese.
 
 ## Open the app
 
-Open `index.html` in any modern browser (double-click it, or serve the folder with
+Published version (always the latest `main`):
+https://jonathan-barreto.github.io/calculadora-bots/
+
+To run it locally, open `index.html` in any modern browser (double-click it, or serve the folder with
 any static server, e.g. `npx serve .`).
 
 ## Run the tests
@@ -27,4 +30,6 @@ Tests use the built-in `node:test` runner and live in `test/`.
 - `src/keyboard.js` — maps physical keyboard keys to calculator keys, no DOM access.
 - `src/app.js` — UI wiring between the DOM and the logic; saves the history in `localStorage`.
 - `test/` — automated tests for the logic.
+- `.github/workflows/pages.yml` — runs the tests and publishes the site to GitHub Pages on
+  every push to `main`.
 - `bots/` — playbooks for the bot team that builds this project.
