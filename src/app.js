@@ -12,6 +12,7 @@
     const display = Calculator.getDisplay(state);
     expressionEl.textContent = display.expression;
     currentEl.textContent = display.current;
+    currentEl.classList.toggle('display__current--error', display.isError);
   }
 
   keypad.addEventListener('click', (event) => {
@@ -28,6 +29,8 @@
       state = Calculator.inputDecimal(state);
     } else if (action === 'equals') {
       state = Calculator.evaluate(state);
+    } else if (action === 'clear') {
+      state = Calculator.clear();
     } else {
       return;
     }

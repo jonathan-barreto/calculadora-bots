@@ -10,6 +10,10 @@
   // numbers up to MAX_DIGITS long.
   const PRECISION = 15;
 
+  // Messages shown on the display instead of Infinity or NaN (UI text in pt-BR).
+  const ERROR_DIVIDE_BY_ZERO = 'Não é possível dividir por zero';
+  const ERROR_OUT_OF_RANGE = 'Número grande demais';
+
   function createState() {
     return {
       input: '0', // number being typed or shown, with "." as decimal separator
@@ -18,6 +22,7 @@
       waitingForOperand: false, // operator pressed, second number not typed yet
       evaluated: false, // "=" was just pressed
       lastExpression: '', // expression shown after "=", e.g. "1 + 2 ="
+      error: null, // message shown instead of a number, e.g. after dividing by zero
     };
   }
 
@@ -25,7 +30,16 @@
     return parseFloat(value.toPrecision(PRECISION));
   }
 
+  // Returns the result, or an error message when it cannot be shown as a number.
   function compute(left, operator, right) {
+    if (operator === '/' && right === 0) {
+      return { error: ERROR_DIVIDE_BY_ZERO };
+    }
+    const value = calculate(left, operator, right);
+    return Number.isFinite(value) ? { value } : { error: ERROR_OUT_OF_RANGE };
+  }
+
+  function calculate(left, operator, right) {
     switch (operator) {
       case '+':
         return roundResult(left + right);
@@ -59,7 +73,7 @@
   // Starts a fresh number when the previous one is finished (after an
   // operator or after "="); otherwise keeps the current one.
   function startNumber(state) {
-    if (state.evaluated) {
+    if (state.evaluated || state.error !== null) {
       return { ...createState(), input: '0' };
     }
     if (state.waitingForOperand) {
@@ -92,16 +106,24 @@
     if (!(operator in OPERATOR_SYMBOLS)) {
       throw new Error(`Invalid operator: ${operator}`);
     }
+    // After an error there is no number to operate on: wait for a new one.
+    if (state.error !== null) {
+      return state;
+    }
     // Pressing another operator before the second number replaces it.
     if (state.waitingForOperand) {
       return { ...state, operator };
     }
     const current = parseFloat(state.input);
+    let previous = current;
     // Chained operation (1 + 2 +): compute the partial result first.
-    const previous =
-      state.operator !== null && !state.evaluated
-        ? compute(state.previous, state.operator, current)
-        : current;
+    if (state.operator !== null && !state.evaluated) {
+      const outcome = compute(state.previous, state.operator, current);
+      if (outcome.error) {
+        return errorState(outcome.error, describe(state.previous, state.operator, current));
+      }
+      previous = outcome.value;
+    }
     return {
       ...state,
       input: toPlainString(previous),
@@ -119,19 +141,40 @@
       return state;
     }
     const right = parseFloat(state.input);
-    const result = compute(state.previous, state.operator, right);
+    const expression = `${describe(state.previous, state.operator, right)} =`;
+    const outcome = compute(state.previous, state.operator, right);
+    if (outcome.error) {
+      return errorState(outcome.error, expression);
+    }
     return {
       ...createState(),
-      input: toPlainString(result),
+      input: toPlainString(outcome.value),
       evaluated: true,
-      lastExpression: `${formatNumber(state.previous)} ${OPERATOR_SYMBOLS[state.operator]} ${formatNumber(
-        right
-      )} =`,
+      lastExpression: expression,
     };
   }
 
-  // Text for the two display lines: the expression in progress and the current number.
+  // Expression text such as "1 + 2".
+  function describe(left, operator, right) {
+    return `${formatNumber(left)} ${OPERATOR_SYMBOLS[operator]} ${formatNumber(right)}`;
+  }
+
+  // Shows a message instead of a number; the next digit starts a new calculation.
+  function errorState(error, expression) {
+    return { ...createState(), error, lastExpression: expression };
+  }
+
+  // "C": back to the initial state, display 0 and no expression.
+  function clear() {
+    return createState();
+  }
+
+  // Text for the two display lines: the expression in progress and the current
+  // number (or an error message, flagged by isError).
   function getDisplay(state) {
+    if (state.error !== null) {
+      return { expression: state.lastExpression, current: state.error, isError: true };
+    }
     let expression = '';
     if (state.evaluated) {
       expression = state.lastExpression;
@@ -141,7 +184,7 @@
         expression += ` ${formatNumber(state.input)}`;
       }
     }
-    return { expression, current: formatNumber(state.input) };
+    return { expression, current: formatNumber(state.input), isError: false };
   }
 
   const Calculator = {
@@ -150,6 +193,7 @@
     inputDecimal,
     chooseOperator,
     evaluate,
+    clear,
     getDisplay,
     formatNumber,
   };
