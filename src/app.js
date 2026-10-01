@@ -184,6 +184,11 @@
       }
       return;
     }
+    // Enter keeps activating buttons outside the keypad (Histórico); only
+    // keypad buttons and the rest of the page turn it into "=".
+    if (event.key === 'Enter' && event.target.closest('button') && !keypad.contains(event.target)) {
+      return;
+    }
     const target = Keyboard.keyFromEvent(event);
     const key = target && findKey(target);
     if (!key) {
