@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calculadora</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="calculator" aria-label="Calculadora">
+      <h1 class="calculator__title">Calculadora</h1>
+      <div class="display" role="status" aria-live="polite">
+        <div class="display__expression" id="display-expression"></div>
+        <div class="display__current" id="display-current">0</div>
+      </div>
+    </main>
+    <script src="src/calculator.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>

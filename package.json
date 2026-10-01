@@ -1,0 +1,10 @@
+{
+  "name": "calculadora-bots",
+  "version": "0.1.0",
+  "description": "Web calculator in plain HTML, CSS and JavaScript.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  }
+}
