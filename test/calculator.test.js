@@ -222,3 +222,17 @@ test('shows the pending operator before the second number for every operator', (
   assert.equal(display('1', '*').expression, '1 ×');
   assert.equal(display('1', '/').expression, '1 ÷');
 });
+
+test('results longer than 30 digits show a message instead of a cut number', () => {
+  const big = '9'.repeat(15).split('');
+  const result = display(...big, '*', ...big, '*', ...big, '=');
+  assert.equal(result.isError, true);
+  assert.equal(result.current, 'Número grande demais');
+});
+
+test('results up to 30 digits are still shown', () => {
+  const big = '9'.repeat(15).split('');
+  const result = display(...big, '*', ...big, '=');
+  assert.equal(result.isError, false);
+  assert.equal(result.current.length, 30);
+});

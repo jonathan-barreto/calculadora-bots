@@ -26,12 +26,24 @@
     }
   }
 
+  // Last resort for the expression line: cut it from the start with "…" so the
+  // end of the calculation (the part the user just typed) stays visible.
+  function trimStart(element) {
+    const text = element.textContent;
+    let cut = 0;
+    while (element.scrollWidth > element.clientWidth && cut < text.length) {
+      cut += 1;
+      element.textContent = `…${text.slice(cut)}`;
+    }
+  }
+
   function render() {
     const display = Calculator.getDisplay(state);
     expressionEl.textContent = display.expression;
     currentEl.textContent = display.current;
     currentEl.classList.toggle('display__current--error', display.isError);
     fitText(expressionEl);
+    trimStart(expressionEl);
     fitText(currentEl);
     operatorKeys.forEach((key) => {
       const active = key.dataset.operator === display.activeOperator;

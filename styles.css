@@ -65,12 +65,14 @@ body {
 }
 
 /* Both lines keep a fixed height and never wrap: app.js shrinks the font
-   when the text is wider than the display, so long numbers always fit and
-   the keypad never moves. */
+   when the text is wider than the display (and cuts the start of a very long
+   expression with "…"), so the keypad never moves. */
 .display__expression,
 .display__current {
   overflow: hidden;
   white-space: nowrap;
+  /* Safety net: if text still does not fit, show "…" instead of a silent cut. */
+  text-overflow: ellipsis;
 }
 
 .display__expression {
