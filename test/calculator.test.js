@@ -71,6 +71,27 @@ test('hides floating point noise: 0,1 + 0,2 = 0,3', () => {
   assert.equal(display('1', ',', '1', '*', '3', '=').current, '3,3');
 });
 
+test('keeps every digit of 13 to 15 digit numbers', () => {
+  assert.equal(display(...'1234567890123'.split(''), '+', '1', '=').current, '1234567890124');
+  assert.equal(display(...'123456789012345'.split(''), '+', '1', '=').current, '123456789012346');
+});
+
+test('never shows exponent notation for small numbers', () => {
+  assert.deepEqual(display('0', ',', ...'0000001'.split(''), '*'), {
+    expression: '0,0000001 ×',
+    current: '0,0000001',
+  });
+  assert.deepEqual(display('0', ',', ...'0000001'.split(''), '*', '0', ',', '1', '='), {
+    expression: '0,0000001 × 0,1 =',
+    current: '0,00000001',
+  });
+});
+
+test('formatNumber never uses exponent notation', () => {
+  assert.equal(Calculator.formatNumber(1e-7), '0,0000001');
+  assert.equal(Calculator.formatNumber(1e21), '1000000000000000000000');
+});
+
 test('decimal comma: typing shows a comma and only one is allowed', () => {
   assert.equal(display(',').current, '0,');
   assert.equal(display('1', ',', '5').current, '1,5');

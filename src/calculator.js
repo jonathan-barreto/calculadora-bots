@@ -5,9 +5,10 @@
 
   const OPERATOR_SYMBOLS = { '+': '+', '-': '−', '*': '×', '/': '÷' };
   const MAX_DIGITS = 15;
-  // Rounding to 12 significant digits hides binary floating point noise
-  // such as 0.1 + 0.2 = 0.30000000000000004.
-  const PRECISION = 12;
+  // Rounding to 15 significant digits hides binary floating point noise
+  // such as 0.1 + 0.2 = 0.30000000000000004 while keeping every digit of
+  // numbers up to MAX_DIGITS long.
+  const PRECISION = 15;
 
   function createState() {
     return {
@@ -39,9 +40,16 @@
     }
   }
 
+  // Converts a number to a plain decimal string, never in exponent notation
+  // (1e-7 becomes "0.0000001").
+  function toPlainString(value) {
+    return value.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
+  }
+
   // Formats a number (or a typed number string) using the Brazilian decimal comma.
   function formatNumber(value) {
-    return String(value).replace('.', ',');
+    const text = typeof value === 'number' ? toPlainString(value) : value;
+    return text.replace('.', ',');
   }
 
   function countDigits(input) {
@@ -96,7 +104,7 @@
         : current;
     return {
       ...state,
-      input: String(previous),
+      input: toPlainString(previous),
       previous,
       operator,
       waitingForOperand: true,
@@ -114,7 +122,7 @@
     const result = compute(state.previous, state.operator, right);
     return {
       ...createState(),
-      input: String(result),
+      input: toPlainString(result),
       evaluated: true,
       lastExpression: `${formatNumber(state.previous)} ${OPERATOR_SYMBOLS[state.operator]} ${formatNumber(
         right
