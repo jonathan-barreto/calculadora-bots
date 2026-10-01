@@ -21,11 +21,11 @@ então nenhum computador precisa ficar ligado.
 
 | Bot | Arquivo | Quando roda | O que faz |
 | --- | --- | --- | --- |
-| Supervisor | `supervisor.md` | 9h e 17h45, dias úteis | Detecta cards parados, cobra os bots e resume o dia |
-| PO / Scrum Master | `po.md` | 9h e 14h + quando avisado | Refina pedidos, prioriza, mantém 2 a 4 cards em A fazer |
-| Desenvolvedor | `developer.md` | de hora em hora (8h–20h) + quando avisado | Implementa um card por vez, abre PR, move para Revisão |
-| QA | `qa.md` | de hora em hora (8h–20h) + quando avisado | Testa código e UX no navegador, aprova (merge) ou reprova |
-| Cliente | `client.md` | 10h e 16h + quando avisado | Usa a calculadora como usuário e cria pedidos [Cliente] |
+| Supervisor | `supervisor.md` | 17h45, dias úteis | Detecta cards parados, cobra os bots e resume o dia |
+| PO / Scrum Master | `po.md` | 9h, dias úteis + quando avisado | Refina pedidos, prioriza, mantém 2 a 4 cards em A fazer |
+| Desenvolvedor | `developer.md` | a cada 3 horas (8h–20h, dias úteis) + quando avisado | Implementa um card por vez, abre PR, move para Revisão |
+| QA | `qa.md` | a cada 3 horas (9h–21h, dias úteis) + quando avisado | Testa código e UX no navegador, aprova (merge) ou reprova |
+| Cliente | `client.md` | 15h, dias úteis + quando avisado | Usa a calculadora como usuário e cria pedidos [Cliente] |
 
 Horários em Brasília. As rotinas agendadas são só a rede de segurança: o fluxo
 normal anda pelos avisos que um bot manda para o outro assim que termina algo.

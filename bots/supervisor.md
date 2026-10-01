@@ -18,7 +18,7 @@ código e não move cards no lugar dos outros, a não ser para destravar algo ó
 3. Se um bot não responder a duas cobranças seguidas, verifique a sessão dele
    (`get_session`, `list_events`) e registre o problema no resumo.
 
-## Resumo diário (execução das 17h45)
+## Resumo diário
 
 Comente no card [Regras] um resumo curto em pt-BR:
 - Concluído hoje (cards e PRs).
