@@ -205,6 +205,10 @@
   // the display as the current number, ready to continue: it fills the second
   // number of a pending operation, otherwise it starts a new calculation.
   function recallValue(state, value) {
+    // Only plain number strings ("71.85", "-1250"); anything else is ignored.
+    if (typeof value !== 'string' || !/^-?\d+(\.\d+)?$/.test(value)) {
+      return state;
+    }
     const base = state.error !== null || state.evaluated ? createState() : state;
     return { ...base, input: value, waitingForOperand: false, computedInput: true };
   }

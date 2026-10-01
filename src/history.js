@@ -5,15 +5,27 @@
 
   const MAX_ENTRIES = 10;
 
+  // A result as the logic stores it: plain digits, optional minus sign and
+  // "." decimal separator ("71.85", "-1250").
+  const VALUE_PATTERN = /^-?\d+(\.\d+)?$/;
+  // A number as the display shows it: minus sign, "." thousands groups and
+  // "," decimals ("−1.250,5").
+  const DISPLAY_NUMBER = '−?\\d{1,3}(?:\\.\\d{3})*(?:,\\d+)?';
+  // A finished calculation as the display shows it: "287,4 ÷ 4 =".
+  const EXPRESSION_PATTERN = new RegExp(`^${DISPLAY_NUMBER} [+−×÷] ${DISPLAY_NUMBER} =$`);
+
   // An entry is { expression: '287,4 ÷ 4 =', value: '71.85' }: the expression
   // exactly as the display showed it and the result as a plain number string.
+  // Saved data can be edited by hand, so both are checked strictly.
   function isEntry(entry) {
     return (
       entry !== null &&
       typeof entry === 'object' &&
       typeof entry.expression === 'string' &&
       typeof entry.value === 'string' &&
-      Number.isFinite(parseFloat(entry.value))
+      EXPRESSION_PATTERN.test(entry.expression) &&
+      VALUE_PATTERN.test(entry.value) &&
+      Number.isFinite(Number(entry.value))
     );
   }
 
@@ -49,7 +61,7 @@
     }
   }
 
-  const History = { MAX_ENTRIES, entryFromTransition, addEntry, clearHistory, serialize, parse };
+  const History = { MAX_ENTRIES, isEntry, entryFromTransition, addEntry, clearHistory, serialize, parse };
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = History;
