@@ -179,8 +179,14 @@ body {
   background: var(--key-digit-bg);
 }
 
-.display {
+/* Holds the display, the copy button and the "Copiado!" notice, which are
+   positioned over the display so they never move the layout. */
+.display-area {
+  position: relative;
   margin-bottom: 16px;
+}
+
+.display {
   padding: 12px 16px;
   border-radius: 12px;
   background: var(--display-bg);
@@ -200,6 +206,8 @@ body {
 
 .display__expression {
   height: 1.6875rem;
+  /* Room for the copy button in the top left corner. */
+  margin-left: 64px;
   font-size: 1.125rem;
   line-height: 1.6875rem;
   color: var(--text-muted);
@@ -207,6 +215,7 @@ body {
 
 .display__current {
   height: 3rem;
+  cursor: copy;
   font-size: 2.5rem;
   font-weight: 600;
   line-height: 3rem;
@@ -215,6 +224,60 @@ body {
 /* Messages such as "Não é possível dividir por zero" are longer than numbers. */
 .display__current--error {
   font-size: 1.125rem;
+}
+
+.copy-button {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: var(--key-operator-bg);
+  color: var(--key-operator-text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.copy-button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.copy-button:active {
+  background: var(--key-operator-bg-active);
+}
+
+.copy-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* "Copiado!" notice, shown for 2 seconds over the bottom of the display. */
+.copy-toast {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.copy-toast--visible {
+  opacity: 1;
 }
 
 .keypad {
@@ -365,7 +428,7 @@ body {
     bottom: max(16px, env(safe-area-inset-bottom));
   }
 
-  .display {
+  .display-area {
     margin-top: 12px;
   }
 

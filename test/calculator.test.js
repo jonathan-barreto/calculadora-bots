@@ -367,3 +367,35 @@ test('backspace moves the thousands separator', () => {
   assert.equal(display('1', '2', '5', '0', '⌫').current, '125');
   assert.equal(display('1', '2', '5', '0', '0', '⌫').current, '1.250');
 });
+
+test('copy text uses a decimal comma and no thousands separator', () => {
+  const keys = ['1', '2', '5', '0', '+', '3', '4', '8', '0', ',', '5', '+', '1', '2', '0', '0', '0', '='];
+  assert.equal(display(...keys).current, '16.730,5');
+  assert.equal(Calculator.getCopyText(press(...keys)), '16730,5');
+  assert.equal(Calculator.getCopyText(press('1', '2', '5', '0', '0', '0', '0')), '1250000');
+});
+
+test('copy text keeps decimals and uses a hyphen for negatives', () => {
+  assert.equal(Calculator.getCopyText(press('2', '8', '7', ',', '4', '/', '4', '=')), '71,85');
+  assert.equal(Calculator.getCopyText(press('1', '2', '5', '0', '-', '2', '5', '0', '0', '=')), '-1250');
+});
+
+test('copy text is the number being typed, without a trailing comma', () => {
+  assert.equal(Calculator.getCopyText(press('1', '2', ',', '5')), '12,5');
+  assert.equal(Calculator.getCopyText(press('1', '2', ',')), '12');
+  assert.equal(Calculator.getCopyText(press()), '0');
+});
+
+test('copy text is the first number while an operator waits', () => {
+  assert.equal(Calculator.getCopyText(press('1', '2', '0', '0', '+')), '1200');
+});
+
+test('nothing is copied while an error is shown', () => {
+  assert.equal(Calculator.getCopyText(press('5', '/', '0', '=')), null);
+});
+
+test('getting the copy text does not change the calculation', () => {
+  const state = press('1', '+', '2');
+  Calculator.getCopyText(state);
+  assert.deepEqual(Calculator.getDisplay(state).expression, '1 + 2');
+});

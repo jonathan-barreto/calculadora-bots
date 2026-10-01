@@ -209,6 +209,18 @@
     return { ...base, input: value, waitingForOperand: false, computedInput: true };
   }
 
+  // Text copied to the clipboard: the big number on the display with a
+  // decimal comma but no thousands separator and a plain hyphen for negatives
+  // (16.730,5 is copied as 16730,5), so it pastes right into money fields.
+  // Returns null while an error message is shown.
+  function getCopyText(state) {
+    if (state.error !== null) {
+      return null;
+    }
+    const input = state.input.endsWith('.') ? state.input.slice(0, -1) : state.input;
+    return input.replace('.', ',');
+  }
+
   // Expression text such as "1 + 2".
   function describe(left, operator, right) {
     return `${formatNumber(left)} ${OPERATOR_SYMBOLS[operator]} ${formatNumber(right)}`;
@@ -258,6 +270,7 @@
     backspace,
     percent,
     recallValue,
+    getCopyText,
     getDisplay,
     formatNumber,
   };

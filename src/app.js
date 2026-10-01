@@ -14,6 +14,10 @@
   const historyEmpty = document.getElementById('history-empty');
   const historyClear = document.getElementById('history-clear');
   const HISTORY_STORAGE_KEY = 'calculadora.history';
+  const copyButton = document.getElementById('copy-button');
+  const copyToast = document.getElementById('copy-toast');
+  const COPY_TOAST_MS = 2000;
+  let copyToastTimer;
 
   let state = Calculator.createState();
   let history = loadHistory();
@@ -67,7 +71,7 @@
     historyToggle.textContent = open ? 'Fechar histórico' : 'Histórico';
     // The panel covers the display and keypad: keep focus out of them.
     keypad.inert = open;
-    document.querySelector('.display').inert = open;
+    document.querySelector('.display-area').inert = open;
   }
 
   // Shrinks the font of a display line until its text fits the width.
@@ -105,6 +109,7 @@
     fitText(expressionEl);
     trimStart(expressionEl);
     fitText(currentEl);
+    copyButton.disabled = display.isError;
     operatorKeys.forEach((key) => {
       const active = key.dataset.operator === display.activeOperator;
       key.classList.toggle('key--active', active);
@@ -184,8 +189,8 @@
       }
       return;
     }
-    // Enter keeps activating buttons outside the keypad (Histórico); only
-    // keypad buttons and the rest of the page turn it into "=".
+    // Enter keeps activating buttons outside the keypad (Histórico, Copiar);
+    // only keypad buttons and the rest of the page turn it into "=".
     if (event.key === 'Enter' && event.target.closest('button') && !keypad.contains(event.target)) {
       return;
     }
@@ -212,7 +217,9 @@
     }
     state = Calculator.recallValue(state, entry.dataset.value);
     setHistoryOpen(false);
-    historyToggle.focus();
+    if (event.detail === 0) {
+      historyToggle.focus();
+    }
     render();
   });
 
@@ -221,6 +228,63 @@
     saveHistory();
     renderHistory();
     historyToggle.focus();
+  });
+
+  // Copies with the Clipboard API, falling back to the older execCommand for
+  // browsers or pages where the API is not available. Resolves to success.
+  async function writeToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.opacity = '0';
+      document.body.append(field);
+      field.select();
+      let copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch {
+        copied = false;
+      }
+      field.remove();
+      return copied;
+    }
+  }
+
+  function showCopyToast(message) {
+    copyToast.textContent = message;
+    copyToast.classList.add('copy-toast--visible');
+    clearTimeout(copyToastTimer);
+    copyToastTimer = setTimeout(() => {
+      copyToast.classList.remove('copy-toast--visible');
+      copyToast.textContent = '';
+    }, COPY_TOAST_MS);
+  }
+
+  async function copyResult() {
+    const text = Calculator.getCopyText(state);
+    if (text === null) {
+      return;
+    }
+    const copied = await writeToClipboard(text);
+    showCopyToast(copied ? 'Copiado!' : 'Não foi possível copiar');
+  }
+
+  copyButton.addEventListener('click', copyResult);
+  currentEl.addEventListener('click', copyResult);
+
+  // A mouse click or tap (detail > 0) on a button outside the keypad must not
+  // leave focus there, or the next Enter would press it again instead of "=".
+  // Keyboard users (detail === 0) keep the focus where they put it.
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    if (button && event.detail > 0 && !keypad.contains(button) && !historyPanel.contains(button)) {
+      button.blur();
+    }
   });
 
   window.addEventListener('resize', render);
