@@ -11,6 +11,9 @@
   --key-operator-bg-hover: #c8daf8;
   --key-operator-bg-active: #b2cbf4;
   --key-operator-text: #0b4aa2;
+  --key-function-bg: #dfe2e6;
+  --key-function-bg-hover: #cfd3d9;
+  --key-function-bg-active: #bfc4cb;
   --key-clear-bg: #fbe1df;
   --key-clear-bg-hover: #f7cdc9;
   --key-clear-bg-active: #f2b6b0;
@@ -128,10 +131,6 @@ body {
   grid-column: span 2;
 }
 
-.key--wide3 {
-  grid-column: span 3;
-}
-
 .key--digit {
   background: var(--key-digit-bg);
   color: var(--text);
@@ -145,6 +144,10 @@ body {
 
   .key--operator:hover {
     background: var(--key-operator-bg-hover);
+  }
+
+  .key--function:hover {
+    background: var(--key-function-bg-hover);
   }
 
   .key--clear:hover {
@@ -168,6 +171,17 @@ body {
 
 .key--operator:active {
   background: var(--key-operator-bg-active);
+}
+
+/* Editing keys (⌫ and %): a shade darker than digits. */
+.key--function {
+  background: var(--key-function-bg);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.key--function:active {
+  background: var(--key-function-bg-active);
 }
 
 /* Pending operator: lit until the next number is typed or the operation ends. */

@@ -26,6 +26,7 @@
       evaluated: false, // "=" was just pressed
       lastExpression: '', // expression shown after "=", e.g. "1 + 2 ="
       error: null, // message shown instead of a number, e.g. after dividing by zero
+      computedInput: false, // input came from "%", so the next digit replaces it
     };
   }
 
@@ -38,7 +39,10 @@
     if (operator === '/' && right === 0) {
       return { error: ERROR_DIVIDE_BY_ZERO };
     }
-    const value = calculate(left, operator, right);
+    return checkRange(calculate(left, operator, right));
+  }
+
+  function checkRange(value) {
     if (!Number.isFinite(value) || Math.abs(value) >= 10 ** MAX_RESULT_DIGITS) {
       return { error: ERROR_OUT_OF_RANGE };
     }
@@ -82,8 +86,8 @@
     if (state.evaluated || state.error !== null) {
       return { ...createState(), input: '0' };
     }
-    if (state.waitingForOperand) {
-      return { ...state, input: '0', waitingForOperand: false };
+    if (state.waitingForOperand || state.computedInput) {
+      return { ...state, input: '0', waitingForOperand: false, computedInput: false };
     }
     return state;
   }
@@ -160,6 +164,36 @@
     };
   }
 
+  // "⌫": removes the last character of the number being typed. Results, the
+  // number shown while an operator waits, and numbers produced by "%" are not
+  // being typed, so they are left alone.
+  function backspace(state) {
+    if (state.evaluated || state.error !== null || state.waitingForOperand || state.computedInput) {
+      return state;
+    }
+    const input = state.input.slice(0, -1);
+    return { ...state, input: input === '' || input === '-' ? '0' : input };
+  }
+
+  // "%": alone, divides the number by 100 (50 % = 0,5). In "+" and "−" it is a
+  // percentage of the first number (200 + 10 % = 200 + 20); in "×" and "÷" it
+  // becomes a fraction (200 × 10 % = 200 × 0,1).
+  function percent(state) {
+    if (state.error !== null || state.waitingForOperand) {
+      return state;
+    }
+    const value = parseFloat(state.input);
+    const usesBase = !state.evaluated && (state.operator === '+' || state.operator === '-');
+    const outcome = checkRange(roundResult(usesBase ? (state.previous * value) / 100 : value / 100));
+    if (outcome.error) {
+      return errorState(outcome.error, '');
+    }
+    const input = toPlainString(outcome.value);
+    // After "=" the result becomes a new standalone number.
+    const base = state.evaluated ? createState() : state;
+    return { ...base, input, computedInput: true };
+  }
+
   // Expression text such as "1 + 2".
   function describe(left, operator, right) {
     return `${formatNumber(left)} ${OPERATOR_SYMBOLS[operator]} ${formatNumber(right)}`;
@@ -206,6 +240,8 @@
     chooseOperator,
     evaluate,
     clear,
+    backspace,
+    percent,
     getDisplay,
     formatNumber,
   };
