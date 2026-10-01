@@ -24,6 +24,7 @@ Tests use the built-in `node:test` runner and live in `test/`.
 - `styles.css` — styles.
 - `src/calculator.js` — calculator logic, no DOM access (testable in Node).
 - `src/history.js` — history of finished calculations (last 10), no DOM access.
+- `src/keyboard.js` — maps physical keyboard keys to calculator keys, no DOM access.
 - `src/app.js` — UI wiring between the DOM and the logic; saves the history in `localStorage`.
 - `test/` — automated tests for the logic.
 - `bots/` — playbooks for the bot team that builds this project.
