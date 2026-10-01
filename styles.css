@@ -44,6 +44,7 @@ body {
 }
 
 .calculator {
+  position: relative;
   width: 100%;
   max-width: 360px;
   padding: 16px;
@@ -52,11 +53,130 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+.calculator__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .calculator__title {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.history-toggle,
+.history__clear {
+  min-height: 44px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history-toggle {
+  background: var(--key-operator-bg);
+  color: var(--key-operator-text);
+}
+
+.history-toggle[aria-expanded="true"] {
+  background: var(--key-operator-text);
+  color: var(--surface);
+}
+
+.history__clear {
+  background: var(--key-clear-bg);
+  color: var(--key-clear-text);
+}
+
+.history-toggle:focus-visible,
+.history__clear:focus-visible,
+.history__entry:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* History panel: opens over the display and keypad, right below the button
+   that closes it, so nothing moves and the button is always reachable.
+   Its top is the header height (16px padding + 44px button + 12px gap). */
+.history {
+  position: absolute;
+  top: 72px;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 1;
+  padding: 8px 12px;
+  overflow-y: auto;
+  border: 1px solid var(--key-digit-bg);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.history[hidden] {
+  display: none;
+}
+
+.history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.history__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.history__empty {
+  margin: 12px 0 4px;
+  color: var(--text-muted);
+}
+
+.history__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history__entry {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 4px;
+  border: none;
+  border-bottom: 1px solid var(--key-digit-bg);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: right;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.history__expression {
+  color: var(--text-muted);
+}
+
+.history__result {
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .history__entry:hover {
+    background: var(--display-bg);
+  }
+}
+
+.history__entry:active {
+  background: var(--key-digit-bg);
 }
 
 .display {
@@ -231,8 +351,12 @@ body {
     box-shadow: none;
   }
 
-  .calculator__title {
+  .calculator__header {
     margin-bottom: auto;
+  }
+
+  .history {
+    bottom: max(16px, env(safe-area-inset-bottom));
   }
 
   .display {
