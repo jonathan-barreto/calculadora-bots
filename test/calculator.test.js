@@ -9,6 +9,8 @@ function press(...keys) {
     if (key === ',') return Calculator.inputDecimal(state);
     if (key === '=') return Calculator.evaluate(state);
     if (key === 'C') return Calculator.clear();
+    if (key === '⌫') return Calculator.backspace(state);
+    if (key === '%') return Calculator.percent(state);
     return Calculator.chooseOperator(state, key);
   }, Calculator.createState());
 }
@@ -235,4 +237,84 @@ test('results up to 30 digits are still shown', () => {
   const result = display(...big, '*', ...big, '=');
   assert.equal(result.isError, false);
   assert.equal(result.current.length, 30);
+});
+
+test('backspace removes the last typed digit', () => {
+  assert.deepEqual(display('1', '2', '3', '⌫'), { expression: '', current: '12', isError: false });
+});
+
+test('backspace removes the decimal comma', () => {
+  assert.equal(display('1', '2', ',', '⌫').current, '12');
+  assert.equal(display('1', ',', '5', '⌫', '⌫').current, '1');
+});
+
+test('backspace on the last digit shows 0 and does nothing on 0', () => {
+  assert.equal(display('7', '⌫').current, '0');
+  assert.equal(display('⌫').current, '0');
+  assert.equal(display('7', '⌫', '⌫', '5').current, '5');
+});
+
+test('backspace keeps the expression in progress', () => {
+  assert.deepEqual(display('1', '2', '+', '3', '4', '⌫'), { expression: '12 + 3', current: '3', isError: false });
+  assert.deepEqual(display('1', '2', '+', '3', '⌫'), { expression: '12 + 0', current: '0', isError: false });
+});
+
+test('backspace right after an operator does not touch the first number', () => {
+  assert.deepEqual(display('1', '2', '+', '⌫'), { expression: '12 +', current: '12', isError: false });
+});
+
+test('backspace after equals keeps the calculation and the result', () => {
+  assert.deepEqual(display('1', '2', '+', '3', '=', '⌫'), { expression: '12 + 3 =', current: '15', isError: false });
+});
+
+test('backspace keeps an error message', () => {
+  assert.equal(display('5', '/', '0', '=', '⌫').isError, true);
+});
+
+test('percent alone divides by 100', () => {
+  assert.equal(display('5', '0', '%').current, '0,5');
+  assert.equal(display('7', '%').current, '0,07');
+});
+
+test('percent in addition and subtraction uses the first number as base', () => {
+  assert.deepEqual(display('2', '0', '0', '+', '1', '0', '%'), {
+    expression: '200 + 20',
+    current: '20',
+    isError: false,
+  });
+  assert.deepEqual(display('2', '0', '0', '+', '1', '0', '%', '='), {
+    expression: '200 + 20 =',
+    current: '220',
+    isError: false,
+  });
+  assert.equal(display('2', '0', '0', '-', '1', '0', '%').expression, '200 − 20');
+  assert.equal(display('2', '0', '0', '-', '1', '0', '%', '=').current, '180');
+});
+
+test('percent in multiplication and division becomes a fraction', () => {
+  assert.equal(display('2', '0', '0', '*', '1', '0', '%').expression, '200 × 0,1');
+  assert.equal(display('2', '0', '0', '*', '1', '0', '%', '=').current, '20');
+  assert.equal(display('2', '0', '0', '/', '5', '0', '%', '=').current, '400');
+});
+
+test('percent results have no floating point noise', () => {
+  assert.equal(display('3', '3', '+', '7', '%').current, '2,31');
+  assert.equal(display('0', ',', '1', '%').current, '0,001');
+});
+
+test('percent after equals applies to the result', () => {
+  assert.deepEqual(display('1', '+', '2', '=', '%'), { expression: '', current: '0,03', isError: false });
+});
+
+test('a digit after percent starts a new number', () => {
+  assert.equal(display('5', '0', '%', '3').current, '3');
+  assert.equal(display('2', '0', '0', '+', '1', '0', '%', '5', '=').current, '205');
+});
+
+test('backspace does not edit a number produced by percent', () => {
+  assert.equal(display('5', '0', '%', '⌫').current, '0,5');
+});
+
+test('percent while an operator waits for the second number does nothing', () => {
+  assert.deepEqual(display('2', '0', '0', '+', '%'), { expression: '200 +', current: '200', isError: false });
 });

@@ -68,6 +68,10 @@
       state = Calculator.evaluate(state);
     } else if (action === 'clear') {
       state = Calculator.clear();
+    } else if (action === 'backspace') {
+      state = Calculator.backspace(state);
+    } else if (action === 'percent') {
+      state = Calculator.percent(state);
     } else {
       return;
     }
