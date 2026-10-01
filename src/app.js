@@ -2,6 +2,37 @@
 (function () {
   'use strict';
 
-  const display = document.getElementById('display-current');
-  display.textContent = Calculator.formatNumber(0);
+  const expressionEl = document.getElementById('display-expression');
+  const currentEl = document.getElementById('display-current');
+  const keypad = document.querySelector('.keypad');
+
+  let state = Calculator.createState();
+
+  function render() {
+    const display = Calculator.getDisplay(state);
+    expressionEl.textContent = display.expression;
+    currentEl.textContent = display.current;
+  }
+
+  keypad.addEventListener('click', (event) => {
+    const key = event.target.closest('.key');
+    if (!key) {
+      return;
+    }
+    const { digit, operator, action } = key.dataset;
+    if (digit !== undefined) {
+      state = Calculator.inputDigit(state, digit);
+    } else if (operator !== undefined) {
+      state = Calculator.chooseOperator(state, operator);
+    } else if (action === 'decimal') {
+      state = Calculator.inputDecimal(state);
+    } else if (action === 'equals') {
+      state = Calculator.evaluate(state);
+    } else {
+      return;
+    }
+    render();
+  });
+
+  render();
 })();
