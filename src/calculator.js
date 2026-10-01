@@ -26,7 +26,7 @@
       evaluated: false, // "=" was just pressed
       lastExpression: '', // expression shown after "=", e.g. "1 + 2 ="
       error: null, // message shown instead of a number, e.g. after dividing by zero
-      computedInput: false, // input came from "%", so the next digit replaces it
+      computedInput: false, // input came from "%" or the history, so the next digit replaces it
     };
   }
 
@@ -147,6 +147,7 @@
       operator,
       waitingForOperand: true,
       evaluated: false,
+      computedInput: false,
       lastExpression: '',
     };
   }
@@ -200,6 +201,14 @@
     return { ...base, input, computedInput: true };
   }
 
+  // Puts a previous result (a plain number string, e.g. from the history) on
+  // the display as the current number, ready to continue: it fills the second
+  // number of a pending operation, otherwise it starts a new calculation.
+  function recallValue(state, value) {
+    const base = state.error !== null || state.evaluated ? createState() : state;
+    return { ...base, input: value, waitingForOperand: false, computedInput: true };
+  }
+
   // Expression text such as "1 + 2".
   function describe(left, operator, right) {
     return `${formatNumber(left)} ${OPERATOR_SYMBOLS[operator]} ${formatNumber(right)}`;
@@ -248,6 +257,7 @@
     clear,
     backspace,
     percent,
+    recallValue,
     getDisplay,
     formatNumber,
   };
