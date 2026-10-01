@@ -78,6 +78,14 @@ body {
   line-height: 1.2;
 }
 
+/* Messages such as "Não é possível dividir por zero" are longer than numbers.
+   Two lines of this size take the same 48px as one line of digits, so the
+   keypad does not move when a message appears. */
+.display__current--error {
+  font-size: 1.125rem;
+  line-height: 24px;
+}
+
 .keypad {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
