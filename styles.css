@@ -238,7 +238,8 @@ body {
   transition: background-color 0.1s ease, transform 0.05s ease;
 }
 
-.key:active {
+.key:active,
+.key.key--pressed {
   transform: scale(0.95);
 }
 
@@ -279,7 +280,8 @@ body {
   }
 }
 
-.key--digit:active {
+.key--digit:active,
+.key--digit.key--pressed {
   background: var(--key-digit-bg-active);
 }
 
@@ -289,7 +291,8 @@ body {
   font-weight: 600;
 }
 
-.key--operator:active {
+.key--operator:active,
+.key--operator.key--pressed {
   background: var(--key-operator-bg-active);
 }
 
@@ -300,7 +303,8 @@ body {
   font-weight: 600;
 }
 
-.key--function:active {
+.key--function:active,
+.key--function.key--pressed {
   background: var(--key-function-bg-active);
 }
 
@@ -317,7 +321,8 @@ body {
   font-weight: 600;
 }
 
-.key--clear:active {
+.key--clear:active,
+.key--clear.key--pressed {
   background: var(--key-clear-bg-active);
 }
 
@@ -327,7 +332,8 @@ body {
   font-weight: 700;
 }
 
-.key--equals:active {
+.key--equals:active,
+.key--equals.key--pressed {
   background: var(--key-equals-bg-active);
 }
 

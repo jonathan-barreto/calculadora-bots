@@ -112,11 +112,11 @@
     });
   }
 
-  keypad.addEventListener('click', (event) => {
-    const key = event.target.closest('.key');
-    if (!key) {
-      return;
-    }
+  const PRESSED_FEEDBACK_MS = 150;
+  const pressedTimers = new Map();
+
+  // Applies an on-screen key, whether it was clicked or typed.
+  function pressKey(key) {
     const { digit, operator, action } = key.dataset;
     const before = state;
     if (digit !== undefined) {
@@ -143,6 +143,57 @@
       renderHistory();
     }
     render();
+  }
+
+  keypad.addEventListener('click', (event) => {
+    const key = event.target.closest('.key');
+    if (key) {
+      pressKey(key);
+    }
+  });
+
+  // Finds the on-screen key for a keyboard event, or null.
+  function findKey(target) {
+    if (target.digit !== undefined) {
+      return keypad.querySelector(`[data-digit="${target.digit}"]`);
+    }
+    if (target.operator !== undefined) {
+      return keypad.querySelector(`[data-operator="${target.operator}"]`);
+    }
+    return keypad.querySelector(`[data-action="${target.action}"]`);
+  }
+
+  // Shows the typed key as pressed for a moment, like a click.
+  function flashKey(key) {
+    key.classList.add('key--pressed');
+    clearTimeout(pressedTimers.get(key));
+    pressedTimers.set(
+      key,
+      setTimeout(() => key.classList.remove('key--pressed'), PRESSED_FEEDBACK_MS)
+    );
+  }
+
+  document.addEventListener('keydown', (event) => {
+    // With the history open the keypad is hidden: Escape closes the history
+    // and every other key keeps its normal behavior inside the panel.
+    if (!historyPanel.hidden) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setHistoryOpen(false);
+        historyToggle.focus();
+      }
+      return;
+    }
+    const target = Keyboard.keyFromEvent(event);
+    const key = target && findKey(target);
+    if (!key) {
+      return;
+    }
+    // Stops Enter from also clicking the focused button, Backspace from
+    // navigating back and "/" from opening the browser's quick find.
+    event.preventDefault();
+    flashKey(key);
+    pressKey(key);
   });
 
   historyToggle.addEventListener('click', () => {
