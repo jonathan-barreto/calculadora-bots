@@ -5,6 +5,9 @@
 
   const OPERATOR_SYMBOLS = { '+': '+', '-': '−', '*': '×', '/': '÷' };
   const MAX_DIGITS = 15;
+  // Results with more integer digits than this do not fit the display even
+  // with the smallest font, so they are shown as ERROR_OUT_OF_RANGE.
+  const MAX_RESULT_DIGITS = 30;
   // Rounding to 15 significant digits hides binary floating point noise
   // such as 0.1 + 0.2 = 0.30000000000000004 while keeping every digit of
   // numbers up to MAX_DIGITS long.
@@ -36,7 +39,10 @@
       return { error: ERROR_DIVIDE_BY_ZERO };
     }
     const value = calculate(left, operator, right);
-    return Number.isFinite(value) ? { value } : { error: ERROR_OUT_OF_RANGE };
+    if (!Number.isFinite(value) || Math.abs(value) >= 10 ** MAX_RESULT_DIGITS) {
+      return { error: ERROR_OUT_OF_RANGE };
+    }
+    return { value };
   }
 
   function calculate(left, operator, right) {
@@ -170,10 +176,11 @@
   }
 
   // Text for the two display lines: the expression in progress and the current
-  // number (or an error message, flagged by isError).
+  // number (or an error message, flagged by isError), plus the operator key to
+  // highlight while it waits for the second number.
   function getDisplay(state) {
     if (state.error !== null) {
-      return { expression: state.lastExpression, current: state.error, isError: true };
+      return { expression: state.lastExpression, current: state.error, isError: true, activeOperator: null };
     }
     let expression = '';
     if (state.evaluated) {
@@ -184,7 +191,12 @@
         expression += ` ${formatNumber(state.input)}`;
       }
     }
-    return { expression, current: formatNumber(state.input), isError: false };
+    return {
+      expression,
+      current: formatNumber(state.input),
+      isError: false,
+      activeOperator: state.waitingForOperand ? state.operator : null,
+    };
   }
 
   const Calculator = {

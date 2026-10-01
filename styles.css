@@ -62,28 +62,36 @@ body {
   border-radius: 12px;
   background: var(--display-bg);
   text-align: right;
-  overflow-wrap: anywhere;
+}
+
+/* Both lines keep a fixed height and never wrap: app.js shrinks the font
+   when the text is wider than the display (and cuts the start of a very long
+   expression with "…"), so the keypad never moves. */
+.display__expression,
+.display__current {
+  overflow: hidden;
+  white-space: nowrap;
+  /* Safety net: if text still does not fit, show "…" instead of a silent cut. */
+  text-overflow: ellipsis;
 }
 
 .display__expression {
-  min-height: 1.5em;
+  height: 1.6875rem;
   font-size: 1.125rem;
+  line-height: 1.6875rem;
   color: var(--text-muted);
 }
 
 .display__current {
-  min-height: 1.2em;
+  height: 3rem;
   font-size: 2.5rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 3rem;
 }
 
-/* Messages such as "Não é possível dividir por zero" are longer than numbers.
-   Two lines of this size take the same 48px as one line of digits, so the
-   keypad does not move when a message appears. */
+/* Messages such as "Não é possível dividir por zero" are longer than numbers. */
 .display__current--error {
   font-size: 1.125rem;
-  line-height: 24px;
 }
 
 .keypad {
@@ -160,6 +168,13 @@ body {
 
 .key--operator:active {
   background: var(--key-operator-bg-active);
+}
+
+/* Pending operator: lit until the next number is typed or the operation ends. */
+.key--operator.key--active,
+.key--operator.key--active:hover {
+  background: var(--key-operator-text);
+  color: var(--surface);
 }
 
 .key--clear {
