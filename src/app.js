@@ -5,14 +5,39 @@
   const expressionEl = document.getElementById('display-expression');
   const currentEl = document.getElementById('display-current');
   const keypad = document.querySelector('.keypad');
+  const operatorKeys = keypad.querySelectorAll('[data-operator]');
+  const MIN_FONT_SIZE_PX = 10;
 
   let state = Calculator.createState();
+
+  // Shrinks the font of a display line until its text fits the width.
+  function fitText(element) {
+    element.style.fontSize = '';
+    if (element.scrollWidth <= element.clientWidth) {
+      return;
+    }
+    // Start from the proportional size, then step down until it fits.
+    const baseSize = parseFloat(getComputedStyle(element).fontSize);
+    let size = Math.floor((baseSize * element.clientWidth) / element.scrollWidth);
+    element.style.fontSize = `${Math.max(MIN_FONT_SIZE_PX, size)}px`;
+    while (element.scrollWidth > element.clientWidth && size > MIN_FONT_SIZE_PX) {
+      size -= 1;
+      element.style.fontSize = `${size}px`;
+    }
+  }
 
   function render() {
     const display = Calculator.getDisplay(state);
     expressionEl.textContent = display.expression;
     currentEl.textContent = display.current;
     currentEl.classList.toggle('display__current--error', display.isError);
+    fitText(expressionEl);
+    fitText(currentEl);
+    operatorKeys.forEach((key) => {
+      const active = key.dataset.operator === display.activeOperator;
+      key.classList.toggle('key--active', active);
+      key.setAttribute('aria-pressed', String(active));
+    });
   }
 
   keypad.addEventListener('click', (event) => {
@@ -37,5 +62,6 @@
     render();
   });
 
+  window.addEventListener('resize', render);
   render();
 })();

@@ -170,10 +170,11 @@
   }
 
   // Text for the two display lines: the expression in progress and the current
-  // number (or an error message, flagged by isError).
+  // number (or an error message, flagged by isError), plus the operator key to
+  // highlight while it waits for the second number.
   function getDisplay(state) {
     if (state.error !== null) {
-      return { expression: state.lastExpression, current: state.error, isError: true };
+      return { expression: state.lastExpression, current: state.error, isError: true, activeOperator: null };
     }
     let expression = '';
     if (state.evaluated) {
@@ -184,7 +185,12 @@
         expression += ` ${formatNumber(state.input)}`;
       }
     }
-    return { expression, current: formatNumber(state.input), isError: false };
+    return {
+      expression,
+      current: formatNumber(state.input),
+      isError: false,
+      activeOperator: state.waitingForOperand ? state.operator : null,
+    };
   }
 
   const Calculator = {

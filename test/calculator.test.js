@@ -13,8 +13,14 @@ function press(...keys) {
   }, Calculator.createState());
 }
 
+// Display text and error flag (the highlighted operator is tested separately).
 function display(...keys) {
-  return Calculator.getDisplay(press(...keys));
+  const { activeOperator, ...text } = Calculator.getDisplay(press(...keys));
+  return text;
+}
+
+function activeOperator(...keys) {
+  return Calculator.getDisplay(press(...keys)).activeOperator;
 }
 
 test('formatNumber uses a decimal comma', () => {
@@ -188,4 +194,31 @@ test('results too large for a number show a message instead of Infinity', () => 
   const result = display(...keys);
   assert.equal(result.isError, true);
   assert.equal(result.current, 'Número grande demais');
+});
+
+test('highlights the pending operator until the second number is typed', () => {
+  assert.equal(activeOperator('1'), null);
+  assert.equal(activeOperator('1', '+'), '+');
+  assert.equal(activeOperator('1', '-'), '-');
+  assert.equal(activeOperator('1', '+', '*'), '*');
+  assert.equal(activeOperator('1', '+', '2'), null);
+  assert.equal(activeOperator('1', '+', ','), null);
+});
+
+test('highlights the operator again in a chained operation and after equals', () => {
+  assert.equal(activeOperator('1', '+', '2', '+'), '+');
+  assert.equal(activeOperator('1', '+', '2', '=', '/'), '/');
+});
+
+test('no operator is highlighted after equals, C or an error', () => {
+  assert.equal(activeOperator('1', '+', '2', '='), null);
+  assert.equal(activeOperator('1', '+', 'C'), null);
+  assert.equal(activeOperator('5', '/', '0', '='), null);
+});
+
+test('shows the pending operator before the second number for every operator', () => {
+  assert.equal(display('1', '+').expression, '1 +');
+  assert.equal(display('1', '-').expression, '1 −');
+  assert.equal(display('1', '*').expression, '1 ×');
+  assert.equal(display('1', '/').expression, '1 ÷');
 });
