@@ -70,10 +70,16 @@
     return value.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
   }
 
-  // Formats a number (or a typed number string) using the Brazilian decimal comma.
+  // Formats a number (or a typed number string such as "1250." while typing)
+  // the Brazilian way: "." groups thousands, "," is the decimal separator and
+  // negatives use the minus sign (−1.250,5). The grouping is only visual.
   function formatNumber(value) {
     const text = typeof value === 'number' ? toPlainString(value) : value;
-    return text.replace('.', ',');
+    const negative = text.startsWith('-');
+    const [integerPart, decimalPart] = (negative ? text.slice(1) : text).split('.');
+    const grouped = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const decimals = decimalPart === undefined ? '' : `,${decimalPart}`;
+    return `${negative ? '−' : ''}${grouped}${decimals}`;
   }
 
   function countDigits(input) {

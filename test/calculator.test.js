@@ -58,7 +58,7 @@ test('adds, subtracts, multiplies and divides', () => {
   assert.equal(display('7', '-', '5', '=').current, '2');
   assert.equal(display('7', '*', '5', '=').current, '35');
   assert.equal(display('7', '/', '2', '=').current, '3,5');
-  assert.equal(display('2', '-', '5', '=').current, '-3');
+  assert.equal(display('2', '-', '5', '=').current, '−3');
 });
 
 test('uses the on-screen symbols in the expression', () => {
@@ -82,8 +82,8 @@ test('hides floating point noise: 0,1 + 0,2 = 0,3', () => {
 });
 
 test('keeps every digit of 13 to 15 digit numbers', () => {
-  assert.equal(display(...'1234567890123'.split(''), '+', '1', '=').current, '1234567890124');
-  assert.equal(display(...'123456789012345'.split(''), '+', '1', '=').current, '123456789012346');
+  assert.equal(display(...'1234567890123'.split(''), '+', '1', '=').current, '1.234.567.890.124');
+  assert.equal(display(...'123456789012345'.split(''), '+', '1', '=').current, '123.456.789.012.346');
 });
 
 test('never shows exponent notation for small numbers', () => {
@@ -101,7 +101,7 @@ test('never shows exponent notation for small numbers', () => {
 
 test('formatNumber never uses exponent notation', () => {
   assert.equal(Calculator.formatNumber(1e-7), '0,0000001');
-  assert.equal(Calculator.formatNumber(1e21), '1000000000000000000000');
+  assert.equal(Calculator.formatNumber(1e21), '1.000.000.000.000.000.000.000');
 });
 
 test('decimal comma: typing shows a comma and only one is allowed', () => {
@@ -137,7 +137,7 @@ test('equals without an operator does nothing', () => {
 
 test('limits typed numbers to 15 digits', () => {
   const keys = Array(20).fill('9');
-  assert.equal(display(...keys).current, '9'.repeat(15));
+  assert.equal(display(...keys).current, '999.999.999.999.999');
 });
 
 test('rejects invalid input', () => {
@@ -236,7 +236,7 @@ test('results up to 30 digits are still shown', () => {
   const big = '9'.repeat(15).split('');
   const result = display(...big, '*', ...big, '=');
   assert.equal(result.isError, false);
-  assert.equal(result.current.length, 30);
+  assert.equal(result.current.replace(/\./g, '').length, 30);
 });
 
 test('backspace removes the last typed digit', () => {
@@ -317,4 +317,53 @@ test('backspace does not edit a number produced by percent', () => {
 
 test('percent while an operator waits for the second number does nothing', () => {
   assert.deepEqual(display('2', '0', '0', '+', '%'), { expression: '200 +', current: '200', isError: false });
+});
+
+test('formatNumber groups thousands with a dot', () => {
+  const expected = ['1', '12', '125', '1.250', '12.500', '125.000', '1.250.000'];
+  [1, 12, 125, 1250, 12500, 125000, 1250000].forEach((value, i) => {
+    assert.equal(Calculator.formatNumber(value), expected[i]);
+  });
+});
+
+test('formatNumber never groups the decimal part', () => {
+  assert.equal(Calculator.formatNumber(1250.505), '1.250,505');
+  assert.equal(Calculator.formatNumber('1250.50505'), '1.250,50505');
+});
+
+test('formatNumber keeps a typed trailing comma', () => {
+  assert.equal(Calculator.formatNumber('1250.'), '1.250,');
+  assert.equal(Calculator.formatNumber('1250.5'), '1.250,5');
+});
+
+test('formatNumber shows negatives with the minus sign', () => {
+  assert.equal(Calculator.formatNumber(-1250), '−1.250');
+  assert.equal(Calculator.formatNumber(-0.5), '−0,5');
+  assert.equal(Calculator.formatNumber(-125), '−125');
+});
+
+test('typed numbers get the thousands separator while typing', () => {
+  const steps = ['1', '2', '5', '0', '0', '0', '0'];
+  const expected = ['1', '12', '125', '1.250', '12.500', '125.000', '1.250.000'];
+  steps.forEach((_, i) => {
+    assert.equal(display(...steps.slice(0, i + 1)).current, expected[i]);
+  });
+  assert.equal(display('1', '2', '5', '0', ',').current, '1.250,');
+  assert.equal(display('1', '2', '5', '0', ',', '5').current, '1.250,5');
+});
+
+test('the expression and the result use the thousands separator', () => {
+  const keys = ['1', '2', '5', '0', '+', '3', '4', '8', '0', ',', '5', '+', '1', '2', '0', '0', '0', '='];
+  assert.deepEqual(display(...keys), {
+    // Chained operations show the partial result (1.250 + 3.480,5 = 4.730,5).
+    expression: '4.730,5 + 12.000 =',
+    current: '16.730,5',
+    isError: false,
+  });
+  assert.equal(display('1', '2', '5', '0', '*', '1', '0', '=').current, '12.500');
+});
+
+test('backspace moves the thousands separator', () => {
+  assert.equal(display('1', '2', '5', '0', '⌫').current, '125');
+  assert.equal(display('1', '2', '5', '0', '0', '⌫').current, '1.250');
 });
